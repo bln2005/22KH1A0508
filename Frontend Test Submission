@@ -1,1 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Logger Demo</title>
+</head>
+<body>
+    <h1>Frontend Logging Middleware Demo</h1>
 
+    <button onclick="sendInfoLog()">Send Info Log</button>
+    <button onclick="sendErrorLog()">Send Error Log</button>
+
+    <script>
+        
+        async function log(stack, level, pkg, message) {
+            const allowedStacks = ["frontend"];
+            const allowedLevels = ["debug", "info", "warn", "error", "fatal"];
+            const allowedPackages = ["api", "component", "hook", "page", "state", "style", "auth", "config", "middleware", "utils"];
+
+            
+            if (!allowedStacks.includes(stack)) {
+                console.error("Invalid stack");
+                return;
+            }
+            if (!allowedLevels.includes(level)) {
+                console.error("Invalid level");
+                return;
+            }
+            if (!allowedPackages.includes(pkg)) {
+                console.error("Invalid package");
+                return;
+            }
+
+            const payload = {
+                stack: stack,
+                level: level,
+                package: pkg,
+                message: message
+            };
+
+            try {
+                const response = await fetch("http://20.244.56.144/evaluation-service/logs", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    console.error("Failed to send log:", response.statusText);
+                } else {
+                    console.log("✅ Log sent successfully!");
+                }
+            } catch (err) {
+                console.error("Error in sending log:", err);
+            }
+        }
+
+        
+        function sendInfoLog() {
+            log("frontend", "info", "component", "User clicked the Info button");
+        }
+
+        
+        function sendErrorLog() {
+            log("frontend", "error", "api", "Failed to fetch data from backend");
+        }
+    </script>
+</body>
+</html>
